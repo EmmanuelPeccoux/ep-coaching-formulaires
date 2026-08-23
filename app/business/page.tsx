@@ -23,6 +23,14 @@ const questions: Question[] = [
     helper: "Pour te recontacter si besoin avant l'appel.",
   },
   {
+    type: "email",
+    id: "email",
+    label: "Ton email ?",
+    placeholder: "toi@exemple.com",
+    helper: "Pour pré-remplir ta réservation de créneau, rien de plus. Facultatif.",
+    optional: true,
+  },
+  {
     type: "choice",
     id: "anciennete",
     label: "Depuis combien de temps tu coaches ?",
@@ -105,8 +113,8 @@ export default function BusinessPrequalificationPage() {
       onSubmit={submitBusinessForm}
       successTitle="On se parle bientôt"
       successBody="Réserve ton créneau, on fait le point sur ton activité et sur ce que tu veux atteindre."
-      ctaHref="https://calendly.com/peccoux-manu/30min"
-      ctaLabel="Réserver mon appel"
+      calendlyUrl="https://calendly.com/peccoux-manu/30min"
+      campaignTag="business"
     />
   );
 }

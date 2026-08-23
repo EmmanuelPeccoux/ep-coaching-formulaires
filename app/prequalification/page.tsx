@@ -63,6 +63,14 @@ const questions: Question[] = [
     helper: "Pour te recontacter si besoin avant l'appel.",
   },
   {
+    type: "email",
+    id: "email",
+    label: "Ton email ?",
+    placeholder: "toi@exemple.com",
+    helper: "Pour pré-remplir ta réservation de créneau, rien de plus. Facultatif.",
+    optional: true,
+  },
+  {
     type: "choice",
     id: "timeline",
     label: "Tu es prêt à commencer quand ?",
@@ -98,8 +106,8 @@ export default function PrequalificationPage() {
       onSubmit={submitPhysiqueForm}
       successTitle="On se parle bientôt"
       successBody="Réserve ton créneau, on fait le point sur ta situation et sur ce que tu veux atteindre."
-      ctaHref="https://calendly.com/peccoux-manu/30min"
-      ctaLabel="Réserver mon appel"
+      calendlyUrl="https://calendly.com/peccoux-manu/30min"
+      campaignTag="physique"
     />
   );
 }

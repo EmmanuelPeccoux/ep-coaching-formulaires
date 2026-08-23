@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 
 export type Question =
   | {
@@ -18,7 +18,7 @@ export type Question =
 export type Answers = Record<string, string>;
 
 // Handle correct : @santamariasanchez_ (jamais @emmanuelpeccoux, prompt
-// 13/15). Affiche sur l'ecran d'intro ET l'ecran de succes, pour que le
+// 13/15). Affiche sur l'ecran d'intro, de succes ET d'erreur, pour que le
 // bon handle soit visible partout ou l'ancien formulaire en montrait un.
 function Footer() {
   return (
@@ -35,22 +35,39 @@ function Footer() {
 
 type SubmitResult = { ok: true } | { ok: false; error: string };
 
+// Construit le lien Calendly pre-rempli (prompt 14/15, section 1.3) : nom
+// et email transmis via les parametres reconnus par Calendly, plus un
+// utm_campaign pour que Santamaria sache d'un coup d'oeil, dans les
+// details de la reservation, si l'appel vient du parcours physique ou
+// business (un seul evenement Calendly actif a la fois sur ce plan, voir
+// README pour le detail complet de cette contrainte) — c'est le "champ
+// transmis dans les donnees" explicitement permis par le prompt en
+// alternative a deux evenements distincts.
+function buildCalendlyUrl(base: string, campaignTag: string, answers: Answers) {
+  const url = new URL(base);
+  const fullName = [answers.prenom, answers.nom].filter(Boolean).join(" ").trim();
+  if (fullName) url.searchParams.set("name", fullName);
+  if (answers.email) url.searchParams.set("email", answers.email);
+  url.searchParams.set("utm_campaign", campaignTag);
+  return url.toString();
+}
+
 export default function Wizard({
   intro,
   questions,
   onSubmit,
   successTitle,
   successBody,
-  ctaHref,
-  ctaLabel,
+  calendlyUrl,
+  campaignTag,
 }: {
   intro: { eyebrow: string; title: string; body: string };
   questions: Question[];
   onSubmit: (answers: Answers) => Promise<SubmitResult>;
   successTitle: string;
   successBody: string;
-  ctaHref: string;
-  ctaLabel: string;
+  calendlyUrl: string;
+  campaignTag: string;
 }) {
   const [started, setStarted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -64,6 +81,11 @@ export default function Wizard({
 
   const isOptional = current?.type === "email" && current.optional;
   const canAdvance = isOptional || value.trim().length > 0;
+
+  const prefilledCalendlyUrl = useMemo(
+    () => buildCalendlyUrl(calendlyUrl, campaignTag, answers),
+    [calendlyUrl, campaignTag, answers]
+  );
 
   function setValue(id: string, v: string) {
     setAnswers((prev) => ({ ...prev, [id]: v }));
@@ -123,11 +145,46 @@ export default function Wizard({
           {successBody}
         </p>
         <a
-          href={ctaHref}
+          href={prefilledCalendlyUrl}
           className="rounded-lg bg-rouge-principal px-8 py-4 text-[15px] font-bold tracking-wide text-blanc-casse transition-colors hover:bg-rouge-fonce active:scale-[0.98]"
         >
-          {ctaLabel}
+          Réserver mon appel
         </a>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Ecran d'erreur dedie (prompt 14/15, section 1.4) : si l'enregistrement
+  // des reponses echoue, l'utilisateur n'est jamais bloque. Le lien
+  // Calendly reste propose directement ici, sans dependre d'un nouvel
+  // essai reussi — reserver l'appel compte plus que sauvegarder les
+  // reponses, donc l'un ne doit jamais bloquer l'autre.
+  if (submitState === "error") {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+        <span className="diamond mb-6" aria-hidden="true" />
+        <h1 className="mb-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+          Petit problème technique
+        </h1>
+        <p className="mb-10 max-w-md text-[15px] leading-relaxed text-blanc-casse/70">
+          Tes réponses n&rsquo;ont pas pu être enregistrées, mais ça ne doit pas t&rsquo;empêcher de réserver ton appel. Tu peux aussi réessayer, ou nous écrire directement sur Instagram.
+        </p>
+        <div className="flex flex-col items-center gap-3">
+          <a
+            href={prefilledCalendlyUrl}
+            className="rounded-lg bg-rouge-principal px-8 py-4 text-[15px] font-bold tracking-wide text-blanc-casse transition-colors hover:bg-rouge-fonce active:scale-[0.98]"
+          >
+            Réserver mon appel quand même
+          </a>
+          <button
+            type="button"
+            onClick={() => setSubmitState("idle")}
+            className="text-sm font-medium text-blanc-casse/50 transition-colors hover:text-blanc-casse"
+          >
+            Réessayer l&rsquo;envoi
+          </button>
+        </div>
         <Footer />
       </div>
     );
@@ -204,12 +261,6 @@ export default function Wizard({
             }}
           />
         )}
-
-        {submitState === "error" ? (
-          <p className="mt-4 text-sm text-rouge-principal">
-            Un problème est survenu à l&rsquo;envoi. Réessaie, ou écris-nous directement si ça persiste.
-          </p>
-        ) : null}
       </div>
 
       <div className="mt-10 flex items-center justify-between gap-4">
