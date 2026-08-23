@@ -1,0 +1,23 @@
+"use server";
+
+import { getSupabaseAdmin } from "@/lib/supabase";
+import type { Answers } from "@/components/Wizard";
+
+export async function submitPhysiqueForm(answers: Answers) {
+  const { prenom, nom, telephone, ...rest } = answers;
+  try {
+    const supabase = getSupabaseAdmin();
+    const { error } = await supabase.from("prequalification_responses").insert({
+      form_type: "physique",
+      first_name: prenom ?? "",
+      last_name: nom ?? "",
+      phone: telephone ?? "",
+      answers: rest,
+    });
+    if (error) throw error;
+    return { ok: true as const };
+  } catch (err) {
+    console.error("submitPhysiqueForm", err);
+    return { ok: false as const, error: "insert_failed" };
+  }
+}

@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════
+   Tokens repris tels quels du repo ep-site (assets/css/base.css), pour que
+   le formulaire se sente comme la continuite exacte du site plutot qu'un
+   sous-produit visuellement different. Meme palette, meme interdit de ton
+   froid, meme police (Montserrat, jamais Bebas Neue).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root {
+  --rouge-principal: #e01e1e;
+  --rouge-fonce: #890404;
+  --rouge-moyen: #b00202;
+  --rouge-tres-fonce: #270101;
+  --noir-profond: #0d0000;
+  --blanc-casse: #f5eded;
+}
+
+@theme inline {
+  --color-rouge-principal: var(--rouge-principal);
+  --color-rouge-fonce: var(--rouge-fonce);
+  --color-rouge-moyen: var(--rouge-moyen);
+  --color-rouge-tres-fonce: var(--rouge-tres-fonce);
+  --color-noir-profond: var(--noir-profond);
+  --color-blanc-casse: var(--blanc-casse);
+  --font-sans: var(--font-montserrat), system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--noir-profond);
+  color: var(--blanc-casse);
+  min-height: 100dvh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--rouge-principal);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Diamant signature (motif du logo/site), repris identique. */
+.diamond {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: var(--rouge-principal);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
