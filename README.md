@@ -16,38 +16,31 @@ code source original.
 l'ancien formulaire n'a pas pu être identifié. Un nouveau point de
 stockage a donc été créé, voir plus bas.
 
-**Ce repo existe maintenant sur GitHub** :
+**Ce repo existe sur GitHub** :
 `github.com/EmmanuelPeccoux/ep-coaching-formulaires` (créé au prompt
 14/15 via l'API GitHub directement, avec le token déjà utilisé par git
 push depuis le début de session — le connecteur GitHub n'existant pas
 dans cette session).
 
-**Le déploiement Vercel n'a pas pu être branché sur ce repo dans cette
-session, malgré plusieurs tentatives réelles, pas un simple abandon** :
-- Le connecteur Vercel MCP ne liste ni ne retrouve AUCUN projet, y
-  compris ceux qu'il vient tout juste de créer lui-même (`get_project`
-  renvoie 404 sur un ID qu'il a rendu deux secondes plus tôt).
-- `deploy_to_vercel` a réussi une fois (fichiers de config seuls, test),
-  puis a échoué en 403 sur l'essai suivant.
-- `create_git_project` a créé un projet Vercel (ID retourné :
-  `prj_dBOpjpN4kZGdlzVm2M6GVBMWrmq2`, nom `ep-coaching-formulaires-v2`)
-  mais n'a pas pu vérifier la liaison git ensuite (404 encore).
-- Vérifié en HTTP direct (`curl`), pas seulement via le connecteur : les
-  URLs de ces tentatives renvoient bien un vrai 404, ce ne sont pas des
-  déploiements fantômes juste invisibles du connecteur — rien n'est
-  réellement en ligne.
-- Vercel CLI installée en local (`vercel@54.6.1`) mais sans session
-  authentifiée (`vercel whoami` échoue, "token not valid").
+**Déployé en production, résolu dans la même session** : le connecteur
+Vercel MCP s'est avéré cassé côté lecture (ne liste ni ne retrouve aucun
+projet, y compris ceux qu'il vient de créer lui-même — confirmé même sur
+`ep-coaching-app` dont l'ID exact était connu). Contourné avec la CLI
+Vercel en local : `vercel login` (flux OAuth par device code, un clic
+humain nécessaire, impossible à automatiser plus loin — sécurité
+volontaire) puis déploiement direct. Un vrai bug de config a été trouvé
+au passage : le projet Vercel existant avait `Framework Preset: Other`
+au lieu de Next.js (attendait un dossier `public/`), signe que le
+déploiement d'origine n'était probablement pas un Next.js App Router
+standard. Corrigé avec `vercel.json` (`{"framework": "nextjs"}`).
+L'intégration Git a ensuite été reconnectée sur ce repo
+(`vercel git connect`) : les prochains push sur `main` se déploient
+automatiquement, comme sur `ep-coaching-app`.
 
-**Action nécessaire, en dehors de cette session** : reconnecter le
-connecteur Vercel (claude.ai/customize/connectors) puis relancer, ou
-importer le repo manuellement dans le dashboard Vercel (Add New →
-Project → Import `EmmanuelPeccoux/ep-coaching-formulaires`) et renseigner
-les 2 variables d'environnement ci-dessous. Deux projets Vercel
-orphelins (`ep-coaching-formulaires-test`, `ep-coaching-formulaires-v2`)
-ont été créés pendant ces tentatives et n'ont jamais servi de trafic
-réel (confirmé 404) : à supprimer depuis le dashboard si visibles là-bas,
-sans risque puisqu'ils ne sont liés à rien de fonctionnel.
+Deux projets Vercel orphelins créés pendant les tentatives ratées via le
+connecteur MCP (`ep-coaching-formulaires-test`, `-v2`) ont été supprimés
+en fin de session, aucun n'avait jamais servi de trafic réel (confirmé
+404 avant suppression).
 
 ## Stockage des réponses
 
@@ -67,14 +60,33 @@ Migration : `supabase/migrations/20260823_prequalification_responses.sql`
 - RLS activée, **aucune policy publique** : les inserts passent
   exclusivement par les Server Actions (`app/*/actions.ts`) avec la clé
   service role (`SUPABASE_SERVICE_ROLE_KEY`, jamais exposée au client).
+  Même architecture que le reste de l'écosystème EP Coaching (voir
+  `auth_login_attempts`/`oura_connections` dans ce même projet Supabase :
+  RLS activée, zéro policy, service role uniquement).
+
+**Détour non abouti, documenté pour ne pas être retenté inutilement** :
+une première version utilisait la clé publique (anon/publishable) avec
+une policy RLS dédiée autorisant l'insertion publique — pattern plus
+conventionnel pour un formulaire public, clé non sensible à gérer. La
+policy était correctement configurée (vérifié via `pg_policies` : rôle,
+permissive, `with_check(true)` tous corrects) mais les inserts en `anon`
+échouaient systématiquement en `42501`, y compris sur une table de test
+triviale fraîchement créée et même avec une policy `to public`. Rôles,
+grants et policies tous vérifiés corrects côté Postgres, cause non
+identifiée. Abandonné au profit de la clé service role (qui, elle,
+fonctionne immédiatement et correctement), obtenue depuis
+`ep-coaching/.env.local` en local plutôt que via Vercel (la copie
+stockée côté Vercel de `ep-coaching-app` est marquée "sensible" et donc
+définitivement illisible après coup, protection normale de Vercel).
 
 ## Variables d'environnement (Vercel)
 
-Voir `.env.example`. À renseigner dans les settings du projet Vercel :
+Déjà renseignées sur le projet Vercel en production. Voir `.env.example`
+pour reproduire en local :
 - `SUPABASE_URL` = `https://cadmwvrsjklgtrrebflz.supabase.co`
 - `SUPABASE_SERVICE_ROLE_KEY` = clé service role du projet Supabase
-  `cadmwvrsjklgtrrebflz` (disponible dans les settings API de ce projet,
-  jamais committée).
+  `cadmwvrsjklgtrrebflz`, la même que `ep-coaching-app` (disponible dans
+  les settings API Supabase de ce projet, jamais committée).
 
 ## Routes
 
