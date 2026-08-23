@@ -40,7 +40,7 @@ type SubmitResult = { ok: true } | { ok: false; error: string };
 // utm_campaign pour que Santamaria sache d'un coup d'oeil, dans les
 // details de la reservation, si l'appel vient du parcours physique ou
 // business (un seul evenement Calendly actif a la fois sur ce plan, voir
-// README pour le detail complet de cette contrainte) — c'est le "champ
+// README pour le detail complet de cette contrainte), c'est le "champ
 // transmis dans les donnees" explicitement permis par le prompt en
 // alternative a deux evenements distincts.
 function buildCalendlyUrl(base: string, campaignTag: string, answers: Answers) {
@@ -158,7 +158,7 @@ export default function Wizard({
   // Ecran d'erreur dedie (prompt 14/15, section 1.4) : si l'enregistrement
   // des reponses echoue, l'utilisateur n'est jamais bloque. Le lien
   // Calendly reste propose directement ici, sans dependre d'un nouvel
-  // essai reussi — reserver l'appel compte plus que sauvegarder les
+  // essai reussi, reserver l'appel compte plus que sauvegarder les
   // reponses, donc l'un ne doit jamais bloquer l'autre.
   if (submitState === "error") {
     return (
