@@ -92,6 +92,17 @@ const questions: Question[] = [
       { value: "flexible", label: "Autant qu'il faut pour atteindre mes objectifs" },
     ],
   },
+  {
+    type: "choice",
+    id: "source_decouverte",
+    label: "Comment tu nous as connu ?",
+    options: [
+      { value: "instagram", label: "Instagram" },
+      { value: "recommandation", label: "Recommandation / bouche-à-oreille" },
+      { value: "recherche", label: "Recherche Google / internet" },
+      { value: "autre", label: "Autre" },
+    ],
+  },
 ];
 
 export default function PrequalificationPage() {
