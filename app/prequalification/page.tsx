@@ -53,6 +53,23 @@ const questions: Question[] = [
       { value: "pas_maintenant", label: "Pas vraiment pour l'instant" },
     ],
   },
+  {
+    // Ajoutée le 2026-08-30 (synthèse webinaire Matis Clouet, voir Notion) :
+    // la qualification a deux volets, "as-tu le problème que je résous" (déjà
+    // couvert par objectif/niveau/motivation) et "m'identifies-tu comme LA
+    // solution", jusqu'ici jamais testé. Un lead qui compare encore plusieurs
+    // options n'est pas disqualifié, mais l'appel de vente se prépare
+    // différemment selon la réponse.
+    type: "choice",
+    id: "pourquoi_ep_coaching",
+    label: "Pourquoi EP Coaching plutôt qu'un autre coach ou une appli générique ?",
+    options: [
+      { value: "confiance_contenu", label: "Je suis le contenu depuis un moment, j'ai confiance dans la méthode" },
+      { value: "recommandation", label: "On me l'a recommandé" },
+      { value: "compare_options", label: "Je compare plusieurs options en ce moment" },
+      { value: "decouverte", label: "Je découvre à peine, je ne sais pas encore" },
+    ],
+  },
   { type: "text", id: "prenom", label: "Ton prénom ?", placeholder: "Prénom" },
   { type: "text", id: "nom", label: "Ton nom ?", placeholder: "Nom" },
   {

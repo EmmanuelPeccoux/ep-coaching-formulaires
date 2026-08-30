@@ -77,6 +77,19 @@ const questions: Question[] = [
     placeholder: "Nombre de clients visé, structuration de ton offre, ce que tu veux atteindre.",
   },
   {
+    // Ajoutée le 2026-08-30 (synthèse webinaire Matis Clouet, voir Notion) :
+    // meme logique que le questionnaire physique/page.tsx.
+    type: "choice",
+    id: "pourquoi_ep_coaching",
+    label: "Pourquoi EP Coaching plutôt qu'une autre solution pour scaler ton activité ?",
+    options: [
+      { value: "confiance_contenu", label: "Je suis le contenu depuis un moment, j'ai confiance dans la méthode" },
+      { value: "recommandation", label: "On me l'a recommandé" },
+      { value: "compare_options", label: "Je compare plusieurs options en ce moment" },
+      { value: "decouverte", label: "Je découvre à peine, je ne sais pas encore" },
+    ],
+  },
+  {
     type: "choice",
     id: "budget",
     label: "Quel budget mensuel tu es prêt à investir pour scaler ton activité ?",
