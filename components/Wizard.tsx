@@ -9,6 +9,17 @@ export type Question =
       label: string;
       helper?: string;
       options: { value: string; label: string }[];
+      // Critère d'exclusion explicite (ajouté 2026-09-01, TODO Notion #15,
+      // TCA) : si la réponse choisie est dans ce tableau, le wizard
+      // s'arrête immédiatement sur un écran dédié (exitScreen) au lieu de
+      // continuer normalement — jamais pour un simple aiguillage
+      // commercial, uniquement quand poursuivre vers l'appel/la vente
+      // serait inapproprié. Rien n'est envoyé à Supabase dans ce cas :
+      // une divulgation médicale est une donnée sensible (RGPD art. 9),
+      // ne pas la stocker du tout est plus sûr que la stocker avec
+      // précaution.
+      exitOn?: string[];
+      exitScreen?: { title: string; body: string };
     }
   | { type: "text"; id: string; label: string; placeholder?: string; helper?: string }
   | { type: "textarea"; id: string; label: string; placeholder?: string; helper?: string }
@@ -72,7 +83,8 @@ export default function Wizard({
   const [started, setStarted] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
   const [answers, setAnswers] = useState<Answers>({});
-  const [submitState, setSubmitState] = useState<"idle" | "done" | "error">("idle");
+  const [submitState, setSubmitState] = useState<"idle" | "done" | "error" | "excluded">("idle");
+  const [exitScreen, setExitScreen] = useState<{ title: string; body: string } | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const total = questions.length;
@@ -93,6 +105,11 @@ export default function Wizard({
 
   function goNext() {
     if (!canAdvance) return;
+    if (current?.type === "choice" && current.exitOn?.includes(value)) {
+      setExitScreen(current.exitScreen ?? null);
+      setSubmitState("excluded");
+      return;
+    }
     if (stepIndex < total - 1) {
       setStepIndex((i) => i + 1);
       return;
@@ -150,6 +167,29 @@ export default function Wizard({
         >
           Réserver mon appel
         </a>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Ecran d'exclusion dedie (ajoute 2026-09-01, critere TCA) : jamais de
+  // Calendly ici, jamais de "reserve ton appel quand meme". Le seul but est
+  // d'orienter vers un vrai professionnel de sante, sans jugement ni
+  // insistance commerciale.
+  if (submitState === "excluded") {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-6 py-16 text-center">
+        <span className="diamond mb-6" aria-hidden="true" />
+        <h1 className="mb-4 text-3xl font-black leading-tight tracking-tight sm:text-4xl">
+          {exitScreen?.title ?? "Merci pour ta franchise"}
+        </h1>
+        <p className="mb-6 max-w-md text-[15px] leading-relaxed text-blanc-casse/70">
+          {exitScreen?.body ??
+            "Ce que tu décris mérite un accompagnement médical, pas un programme de musculation. Je préfère te le dire clairement plutôt que de te faire perdre du temps."}
+        </p>
+        <p className="mb-10 max-w-md text-[14px] leading-relaxed text-blanc-casse/55">
+          Parles-en à ton médecin traitant, ou appelle le 3114 (numéro national gratuit, disponible 24h/24, pour toute détresse psychologique, pas seulement en urgence).
+        </p>
         <Footer />
       </div>
     );

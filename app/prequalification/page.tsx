@@ -70,6 +70,31 @@ const questions: Question[] = [
       { value: "decouverte", label: "Je découvre à peine, je ne sais pas encore" },
     ],
   },
+  {
+    // Ajoutée le 2026-09-01 (TODO Notion #15, source Mastermind ThePrepDad
+    // > Nutrition > TCAs) : critère d'exclusion explicite pour les troubles
+    // du comportement alimentaire, en amont du premier appel. Avant cette
+    // question, seule l'escalade in-app après coup existait côté technique
+    // (une fois déjà client) — rien avant, un vrai trou dans le funnel pour
+    // un coaching qui touche directement à la nutrition. Question posée
+    // sans jugement, une seule fois, réponse "Oui" arrête le parcours
+    // immédiatement (voir Wizard.tsx, exitOn) : aucune réponse envoyée à
+    // Calendly ni à Supabase dans ce cas, uniquement une orientation vers
+    // un professionnel de santé.
+    type: "choice",
+    id: "tca_screening",
+    label: "As-tu, actuellement ou par le passé, un trouble du comportement alimentaire diagnostiqué, ou un suivi médical pour ta relation à la nourriture ?",
+    helper: "Question posée à tout le monde, pour t'orienter vers le bon accompagnement.",
+    options: [
+      { value: "non", label: "Non" },
+      { value: "oui", label: "Oui" },
+    ],
+    exitOn: ["oui"],
+    exitScreen: {
+      title: "Merci pour ta franchise",
+      body: "Ce que tu décris mérite un accompagnement médical, pas un programme de musculation. Je préfère te le dire clairement plutôt que de te faire perdre du temps ou de risquer d'aggraver les choses.",
+    },
+  },
   { type: "text", id: "prenom", label: "Ton prénom ?", placeholder: "Prénom" },
   { type: "text", id: "nom", label: "Ton nom ?", placeholder: "Nom" },
   {
